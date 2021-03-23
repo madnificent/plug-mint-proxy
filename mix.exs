@@ -26,12 +26,12 @@ defmodule PlugMintProxy.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:castore, "~> 0.1.0"},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:castore, "~> 0.1.9"},
+      {:dialyxir, "~> 1.1.0", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
-      {:mint, "~> 0.4.0"},
-      {:plug, "~> 1.10.4"},
-      {:plug_cowboy, "~> 2.4.0"}
+      {:mint, "~> 1.2.1"},
+      {:plug, "~> 1.11.1"},
+      {:plug_cowboy, "~> 2.4.1"}
     ]
   end
 
