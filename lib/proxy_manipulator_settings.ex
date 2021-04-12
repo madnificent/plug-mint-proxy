@@ -3,6 +3,7 @@ defmodule ProxyManipulatorSettings do
 
   @type connection_pair :: ProxyManipulator.connection_pair()
   @type headers :: ProxyManipulator.headers()
+  @type status_code :: ProxyManipulator.status_code()
 
   defstruct request: [], response: []
 
@@ -53,6 +54,21 @@ defmodule ProxyManipulatorSettings do
     |> run_manipulators(headers, connection_pair)
     |> EnvLog.inspect(:log_response_processing,
       label: "Processed response headers",
+      transform: &elem(&1, 0)
+    )
+  end
+
+  @spec process_response_status_code(status_code, t, connection_pair()) ::
+          {status_code, connection_pair}
+  def process_response_status_code(status_code, settings, connection_pair) do
+    EnvLog.inspect(status_code, :log_request_processing, label: "Going to process request status code")
+
+    settings
+    |> response_manipulators()
+    |> Enum.map(&get_status_code_manipulator/1)
+    |> run_manipulators( status_code, connection_pair )
+    |> EnvLog.inspect(:log_response_processing,
+      label: "Processed status code",
       transform: &elem(&1, 0)
     )
   end
@@ -140,6 +156,16 @@ defmodule ProxyManipulatorSettings do
           (headers, connection_pair -> {headers, connection_pair} | :skip)
   defp get_header_manipulator(module) do
     &module.headers/2
+  end
+
+  @spec get_status_code_manipulator(any()) ::
+          (status_code, connection_pair -> {status_code, connection_pair} | :skip)
+  defp get_status_code_manipulator(module) do
+    if function_exported?(module, :status_code, 2) do
+      &module.status_code/2
+    else
+      fn _, _ -> :skip end
+    end
   end
 
   @spec get_chunk_manipulator(any()) ::

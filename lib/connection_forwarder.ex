@@ -251,7 +251,20 @@ defmodule ConnectionForwarder do
     # new_frontend_conn = Plug.Conn.put_status(frontend_conn, status_code)
     EnvLog.inspect(status_code, :log_backend_communication, label: "Processing received status")
 
-    Map.put(state, :return_status, status_code)
+    %{frontend_conn: frontend_conn, backend_conn: backend_conn, manipulators: manipulators} =
+      state
+
+    {status_code, {frontend_conn, backend_conn}} =
+      ProxyManipulatorSettings.process_response_status_code(
+        status_code,
+        manipulators,
+        {frontend_conn, backend_conn}
+      )
+
+    state
+    |> Map.put(:return_status, status_code)
+    |> Map.put(:frontend_conn, frontend_conn)
+    |> Map.put(:backend_conn, backend_conn)
   end
 
   defp process_chunk({:headers, _, headers}, state) do

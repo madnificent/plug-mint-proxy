@@ -1,16 +1,21 @@
 defmodule ProxyManipulator do
   @moduledoc "Manipulators allow you to manipulate requests"
+  @optional_callbacks status_code: 2
 
-  # No way to express an implementor of ProxyManipulator at this time, hence any()f
+  # No way to express an implementor of ProxyManipulator at this time, hence any()
   @type t :: any()
 
   @type connection :: Plug.Conn.t() | Mint.HTTP.t()
   # @type connection_pair :: {incoming :: connection, outgoing :: connection}
   @type connection_pair :: {connection, connection}
   @type headers :: [{String.t(), String.t()}]
+  @type status_code :: Plug.Conn.status()
 
   @doc "Processes and converts the headers"
   @callback headers(headers, connection_pair) :: {headers, connection_pair} | :skip
+
+  @doc "Processes and converts the status code"
+  @callback status_code(status_code, connection_pair) :: {status_code, connection_pair} | :skip
 
   @doc "Processes and converts a chunk"
   @callback chunk(binary(), connection_pair) :: {binary, connection_pair} | :skip
