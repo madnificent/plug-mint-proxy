@@ -126,10 +126,14 @@ defmodule ProxyManipulatorSettings do
           connection_pair()
         ) :: {input, connection_pair()}
         when input: input_type
-  defp run_manipulators([first_manipulator | rest], input, connection_pair) do
-    case first_manipulator.(input, connection_pair) do
-      :skip -> run_manipulators(rest, input, connection_pair)
-      {input, connection_pair} -> run_manipulators(rest, input, connection_pair)
+  defp run_manipulators([first_manipulator | rest], input, {frontend_conn, _} = connection_pair) do
+    if frontend_conn.halted do
+      {input, connection_pair}
+    else
+      case first_manipulator.(input, connection_pair) do
+        :skip -> run_manipulators(rest, input, connection_pair)
+        {input, connection_pair} -> run_manipulators(rest, input, connection_pair)
+      end
     end
   end
 
